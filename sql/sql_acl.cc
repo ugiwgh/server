@@ -355,6 +355,8 @@ static bool show_proxy_grants (THD *, const char *, const char *,
                                char *, size_t);
 static bool show_role_grants(THD *, const char *, const char *,
                              ACL_USER_BASE *, char *, size_t);
+static bool show_default_role(THD *, const char *,
+                              ACL_USER *, char *);
 static bool show_global_privileges(THD *, ACL_USER_BASE *,
                                    bool, char *, size_t);
 static bool show_database_privileges(THD *, const char *, const char *,
@@ -7951,6 +7953,10 @@ bool mysql_show_grants(THD *thd, LEX_USER *lex_user)
 
     if (show_proxy_grants(thd, username, hostname, buff, sizeof(buff)))
       goto end;
+
+    /* Show default role to acl_user */
+    if (show_default_role(thd, hostname, acl_user, buff))
+      goto end;
   }
 
   if (rolename)
@@ -7999,6 +8005,36 @@ static ROLE_GRANT_PAIR *find_role_grant_pair(const LEX_STRING *u,
 
   return (ROLE_GRANT_PAIR *)
     my_hash_search(&acl_roles_mappings, (uchar*)pair_key.ptr(), key_length);
+}
+
+static bool show_default_role(THD *thd, const char *hostname,
+                              ACL_USER *acl_entry, char *buff)
+{
+  Protocol *protocol= thd->protocol;
+  LEX_STRING host= {const_cast<char*>(hostname), strlen(hostname)};
+
+  LEX_STRING def_rolename= acl_entry->default_rolename;
+  if (def_rolename.length)
+  {
+    String def_str(buff,sizeof(buff),system_charset_info);
+    def_str.length(0);
+    def_str.append(STRING_WITH_LEN("SET DEFAULT ROLE "));
+    def_str.append(&def_rolename);
+    def_str.append(" FOR '");
+    def_str.append(acl_entry->user.str, acl_entry->user.length,
+                  system_charset_info);
+    DBUG_ASSERT(!(acl_entry->flags & IS_ROLE));
+    def_str.append(STRING_WITH_LEN("'@'"));
+    def_str.append(&host);
+    def_str.append('\'');
+    protocol->prepare_for_resend();
+    protocol->store(def_str.ptr(),def_str.length(),def_str.charset());
+    if (protocol->write())
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 static bool show_role_grants(THD *thd, const char *username,
