@@ -14155,6 +14155,9 @@ static int native_password_make_scramble(const char *password,
   return 0;
 }
 
+/* As this contains non-HEX characters there's no match */
+static const char invalid_password[] = "*THISISNOTAVALIDPASSWORDTHATCANBEUSEDHERE";
+
 static int native_password_get_salt(const char *hash, size_t hash_length,
                                     unsigned char *out, size_t *out_length)
 {
@@ -14167,6 +14170,12 @@ static int native_password_get_salt(const char *hash, size_t hash_length,
 
   if (hash_length != SCRAMBLED_PASSWORD_CHAR_LENGTH)
   {
+    if (hash_length == 7 && strcmp(hash, "invalid") == 0)
+    {
+      memcpy(out, invalid_password, SCRAMBLED_PASSWORD_CHAR_LENGTH);
+      *out_length= SCRAMBLED_PASSWORD_CHAR_LENGTH;
+      return 0;
+    }
     my_error(ER_PASSWD_LENGTH, MYF(0), SCRAMBLED_PASSWORD_CHAR_LENGTH);
     return 1;
   }
