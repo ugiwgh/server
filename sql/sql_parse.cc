@@ -4369,6 +4369,13 @@ mysql_execute_command(THD *thd)
     /* mysql_update return 2 if we need to switch to multi-update */
     if (up_result != 2)
       break;
+    if (thd->lex->period_conditions.is_set())
+    {
+      my_error(ER_NOT_SUPPORTED_YET, MYF(0),
+               "multi-table update for temporal periods");
+
+      goto error;
+    }
   }
   /* fall through */
   case SQLCOM_UPDATE_MULTI:
