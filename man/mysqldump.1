@@ -36,7 +36,7 @@ tables, consider using the
 instead because it can accomplish faster backups and faster restores\&. See
 \fBmysqlhotcopy\fR(1)\&.
 .PP
-There are three general ways to invoke
+There are four general ways to invoke
 \fBmysqldump\fR:
 .sp
 .if n \{\
@@ -46,6 +46,7 @@ There are three general ways to invoke
 shell> \fBmysqldump [\fR\fB\fIoptions\fR\fR\fB] \fR\fB\fIdb_name\fR\fR\fB [\fR\fB\fItbl_name\fR\fR\fB \&.\&.\&.]\fR
 shell> \fBmysqldump [\fR\fB\fIoptions\fR\fR\fB] \-\-databases \fR\fB\fIdb_name\fR\fR\fB \&.\&.\&.\fR
 shell> \fBmysqldump [\fR\fB\fIoptions\fR\fR\fB] \-\-all\-databases\fR
+shell> \fBmysqldump [\fR\fB\fIoptions\fR\fR\fB] \-\-system={options}\fR
 .fi
 .if n \{\
 .RE

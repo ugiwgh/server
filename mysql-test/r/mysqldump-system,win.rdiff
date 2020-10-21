@@ -1,3 +1,5 @@
+diff --git a/mysql-test/r/mysqldump-system.result b/mysql-test/r/mysqldump-system.result
+index 88cf950c621..5f8b579fa67 100644
 --- a/mysql-test/r/mysqldump-system.result
 +++ b/mysql-test/r/mysqldump-system.result
 @@ -7,8 +7,6 @@
@@ -9,7 +11,7 @@
  CREATE ROLE role_1;
  CREATE ROLE role_2 WITH ADMIN role_1;
  GRANT SHOW DATABASES ON *.* TO role_1;
-@@ -47,9 +45,8 @@
+@@ -48,9 +46,8 @@
  /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
  /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
  /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
@@ -20,7 +22,7 @@
  SELECT COALESCE(CURRENT_ROLE(),'NONE') into @current_role;
  CREATE ROLE IF NOT EXISTS mariadb_dump_import_role;
  GRANT mariadb_dump_import_role TO CURRENT_USER();
-@@ -67,7 +64,7 @@
+@@ -68,7 +65,7 @@ GRANT PROXY ON ''@'%' TO 'root'@'localhost' WITH GRANT OPTION;
  /*!80001 ALTER USER 'root'@'localhost' DEFAULT ROLE NONE */;
  GRANT role_1 TO 'USER'@'%';
  GRANT role_2 TO 'USER'@'%';
@@ -28,21 +30,26 @@
 +GRANT USAGE ON *.* TO 'USER'@'%';
  /*M!100005 SET DEFAULT ROLE 'role_2' FOR 'USER'@'%' */;
  /*!80001 ALTER USER 'USER'@'%' DEFAULT ROLE 'role_2' */;
- GRANT USAGE ON *.* TO 'role_2';
-@@ -167,11 +164,10 @@
+ GRANT role_2 TO 'role_1' WITH ADMIN OPTION;
+@@ -168,8 +165,6 @@
  /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
  /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
  /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+-/*M!100401 UNINSTALL PLUGIN IF EXIST unix_socket */;
 -INSTALL PLUGIN unix_socket  SONAME 'auth_socket.so';
- /*!50701 DROP USER IF EXISTS 'root'@'localhost' */;
- CREATE /*M!100103 OR REPLACE */ USER 'root'@'localhost';
+ DELIMITER |
+ /*M!100101 IF current_user()="'root'@'localhost'" THEN
+   SIGNAL SQLSTATE '45000' SET MYSQL_ERRNO=30001, MESSAGE_TEXT="Don't remove current user 'root'@'localhost''";
+@@ -183,7 +178,7 @@
+ END IF */|
+ DELIMITER ;
  /*!50701 DROP USER IF EXISTS 'USER'@'%' */;
 -CREATE /*M!100103 OR REPLACE */ USER 'USER'@'%' IDENTIFIED VIA unix_socket;
 +CREATE /*M!100103 OR REPLACE */ USER 'USER'@'%';
  SELECT COALESCE(CURRENT_ROLE(),'NONE') into @current_role;
  CREATE ROLE IF NOT EXISTS mariadb_dump_import_role;
  GRANT mariadb_dump_import_role TO CURRENT_USER();
-@@ -191,7 +187,7 @@
+@@ -203,7 +198,7 @@ GRANT PROXY ON ''@'%' TO 'root'@'localhost' WITH GRANT OPTION;
  /*!80001 ALTER USER 'root'@'localhost' DEFAULT ROLE NONE */;
  GRANT role_1 TO 'USER'@'%';
  GRANT role_2 TO 'USER'@'%';
@@ -50,19 +57,19 @@
 +GRANT USAGE ON *.* TO 'USER'@'%';
  /*M!100005 SET DEFAULT ROLE 'role_2' FOR 'USER'@'%' */;
  /*!80001 ALTER USER 'USER'@'%' DEFAULT ROLE 'role_2' */;
- GRANT USAGE ON *.* TO 'role_2';
-@@ -291,9 +287,8 @@
+ GRANT role_2 TO 'role_1' WITH ADMIN OPTION;
+@@ -304,9 +299,8 @@
  /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
  /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
  /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
--INSTALL PLUGIN unix_socket /*!100401 IF NOT EXISTS */ SONAME 'auth_socket.so';
+-INSTALL PLUGIN unix_socket /*M!100401 IF NOT EXISTS */ SONAME 'auth_socket.so';
  CREATE USER IF NOT EXISTS 'root'@'localhost';
 -CREATE USER IF NOT EXISTS 'USER'@'%' IDENTIFIED VIA unix_socket;
 +CREATE USER IF NOT EXISTS 'USER'@'%';
  SELECT COALESCE(CURRENT_ROLE(),'NONE') into @current_role;
  CREATE ROLE IF NOT EXISTS mariadb_dump_import_role;
  GRANT mariadb_dump_import_role TO CURRENT_USER();
-@@ -311,7 +306,7 @@
+@@ -324,7 +318,7 @@ GRANT PROXY ON ''@'%' TO 'root'@'localhost' WITH GRANT OPTION;
  /*!80001 ALTER USER 'root'@'localhost' DEFAULT ROLE NONE */;
  GRANT role_1 TO 'USER'@'%';
  GRANT role_2 TO 'USER'@'%';
@@ -70,8 +77,8 @@
 +GRANT USAGE ON *.* TO 'USER'@'%';
  /*M!100005 SET DEFAULT ROLE 'role_2' FOR 'USER'@'%' */;
  /*!80001 ALTER USER 'USER'@'%' DEFAULT ROLE 'role_2' */;
- GRANT USAGE ON *.* TO 'role_2';
-@@ -400,12 +395,12 @@
+ GRANT role_2 TO 'role_1' WITH ADMIN OPTION;
+@@ -413,12 +407,12 @@
  CHECKSUM TABLE mysql.user, mysql.roles_mapping, mysql.time_zone_transition, mysql.plugin,
  mysql.servers, mysql.func, mysql.innodb_table_stats, mysql.table_stats;
  Table	Checksum
@@ -87,7 +94,7 @@
  mysql.innodb_table_stats	347867921
  mysql.table_stats	664320059
  # Opps....
-@@ -429,12 +424,12 @@
+@@ -442,12 +436,12 @@
  CHECKSUM TABLE mysql.user, mysql.roles_mapping, mysql.time_zone_transition, mysql.plugin,
  mysql.servers, mysql.func, mysql.innodb_table_stats, mysql.table_stats;
  Table	Checksum
@@ -103,7 +110,7 @@
  mysql.innodb_table_stats	347867921
  mysql.table_stats	664320059
  DROP FUNCTION IF EXISTS metaphon;
-@@ -448,7 +443,6 @@
+@@ -461,7 +455,6 @@
  DROP ROLE role_2;
  DROP ROLE role_1;
  drop user USER;
